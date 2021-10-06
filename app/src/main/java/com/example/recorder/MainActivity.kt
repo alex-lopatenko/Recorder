@@ -1,9 +1,10 @@
 package com.example.recorder
 
+import android.app.ActivityManager
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.navigation.Navigation
-import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -14,5 +15,15 @@ class MainActivity : AppCompatActivity() {
 
         NavigationUI.setupWithNavController(bottom_navigation,
         Navigation.findNavController(this, R.id.nav_host_fragment_container))
+    }
+
+    fun isServiceRunning(): Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            if ("com.example.recorder.record.RecordService" == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 }
