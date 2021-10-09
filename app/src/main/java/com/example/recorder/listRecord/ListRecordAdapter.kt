@@ -5,10 +5,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.RecyclerView
 
 import com.example.recorder.R
 import com.example.recorder.database.RecordingItem
+import com.example.recorder.player.PlayerFragment
+import com.example.recorder.removeDialog.RemoveDialogFragment
+import java.io.File
+import java.lang.Exception
+import java.security.cert.CertPath
 
 import java.util.concurrent.TimeUnit
 
@@ -52,5 +61,49 @@ class ListRecordAdapter: RecyclerView.Adapter<ListRecordAdapter.ViewHolder> () {
 
         holder.vName.text = recordingItem.name
         holder.vLength.text = String.format("%02d:%02d", minutes, seconds)
+
+        holder.cardView.setOnClickListener {
+            val filePath = recordingItem.filePath
+
+            val file = File(filePath)
+            if (file.exists()) {
+                try {
+                    playerRecord(filePath, context)
+                } catch (e: Exception) {
+                    //
+                }
+            } else {
+                Toast.makeText(context, "Аудиофайл не найден", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        holder.cardView.setOnClickListener {
+            removeItemDialog(recordingItem, context)
+            false
+        }
+    }
+
+    private fun playerRecord(filePath: String, context: Context?) {
+        val playerFragment: PlayerFragment = PlayerFragment().newInstance(filePath)
+        val transaction: FragmentTransaction = (context as FragmentActivity)
+            .supportFragmentManager
+            .beginTransaction()
+        playerFragment.show(transaction, "dialog_playback")
+    }
+
+    private fun removeItemDialog(
+        recordingItem: RecordingItem,
+        context: Context?
+    ) {
+        val removeDialogFragment: RemoveDialogFragment =
+            RemoveDialogFragment()
+                .newInstance(
+                    recordingItem.id,
+                    recordingItem.filePath)
+        val transaction: FragmentTransaction =
+            (context as FragmentActivity)
+                .supportFragmentManager
+                .beginTransaction()
+        removeDialogFragment.show(transaction, "dialog_remove")
     }
 }
